@@ -1,0 +1,1621 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>OPTIMIZA | Consultoría en Optimización Operativa</title>
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,300&family=DM+Serif+Display:ital@0;1&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <style>
+    /* ─── TOKENS ─────────────────────────────────────────── */
+    :root {
+      --black:   #06060A;
+      --ink:     #0D0D18;
+      --navy:    #071230;
+      --blue:    #1A4FD8;
+      --cobalt:  #0A3AAD;
+      --sky:     #3B82F6;
+      --silver:  #8B9AB5;
+      --mist:    #C5CEDF;
+      --white:   #F4F6FB;
+      --line:    rgba(255,255,255,0.07);
+      --glow:    rgba(26,79,216,0.35);
+      --font-display: 'Bebas Neue', sans-serif;
+      --font-serif:   'DM Serif Display', serif;
+      --font-body:    'DM Sans', sans-serif;
+      --ease: cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    /* ─── RESET ───────────────────────────────────────────── */
+    *, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      font-family: var(--font-body);
+      background: var(--black);
+      color: var(--mist);
+      line-height: 1.6;
+      overflow-x: hidden;
+    }
+
+    /* ─── SCROLLBAR ───────────────────────────────────────── */
+    ::-webkit-scrollbar { width: 4px; }
+    ::-webkit-scrollbar-track { background: var(--black); }
+    ::-webkit-scrollbar-thumb { background: var(--cobalt); border-radius: 2px; }
+
+    /* ─── SELECTION ───────────────────────────────────────── */
+    ::selection { background: var(--blue); color: #fff; }
+
+    /* ─── LAYOUT ──────────────────────────────────────────── */
+    .container { max-width: 1200px; margin: 0 auto; padding: 0 32px; }
+
+    /* ─── NOISE OVERLAY (global texture) ─────────────────── */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='1'/%3E%3C/svg%3E");
+      opacity: 0.025;
+      pointer-events: none;
+      z-index: 9999;
+    }
+
+    /* ════════════════════════════════════════════════════════
+       HEADER
+    ════════════════════════════════════════════════════════ */
+    header {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      z-index: 500;
+      padding: 0;
+      transition: background 0.4s var(--ease), box-shadow 0.4s;
+    }
+    header.scrolled {
+      background: rgba(6,6,10,0.92);
+      backdrop-filter: blur(20px);
+      box-shadow: 0 1px 0 var(--line);
+    }
+    .navbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      height: 72px;
+    }
+    .logo {
+      font-family: var(--font-display);
+      font-size: 2rem;
+      letter-spacing: 0.08em;
+      color: var(--white);
+      text-decoration: none;
+    }
+    .logo em {
+      color: var(--sky);
+      font-style: normal;
+    }
+    .nav-links {
+      display: flex;
+      gap: 2.5rem;
+      list-style: none;
+    }
+    .nav-links a {
+      font-size: 0.82rem;
+      font-weight: 500;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--silver);
+      text-decoration: none;
+      transition: color 0.2s;
+      position: relative;
+    }
+    .nav-links a::after {
+      content: '';
+      position: absolute;
+      bottom: -4px; left: 0;
+      width: 0; height: 1px;
+      background: var(--sky);
+      transition: width 0.3s var(--ease);
+    }
+    .nav-links a:hover { color: var(--white); }
+    .nav-links a:hover::after { width: 100%; }
+
+    .nav-cta {
+      font-size: 0.8rem;
+      font-weight: 600;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--white);
+      text-decoration: none;
+      border: 1px solid rgba(59,130,246,0.5);
+      padding: 9px 22px;
+      border-radius: 3px;
+      transition: all 0.3s var(--ease);
+      background: rgba(26,79,216,0.08);
+    }
+    .nav-cta:hover {
+      background: var(--blue);
+      border-color: var(--blue);
+      box-shadow: 0 0 24px var(--glow);
+    }
+    .menu-btn {
+      display: none;
+      background: none;
+      border: none;
+      color: var(--white);
+      font-size: 1.4rem;
+      cursor: pointer;
+    }
+
+    /* ════════════════════════════════════════════════════════
+       HERO
+    ════════════════════════════════════════════════════════ */
+    .hero {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      position: relative;
+      overflow: hidden;
+      padding: 140px 0 100px;
+    }
+
+    /* Fondo arquitectónico con CSS puro */
+    .hero-bg {
+      position: absolute;
+      inset: 0;
+      background: var(--black);
+      overflow: hidden;
+    }
+
+    /* Perspectiva de edificio con líneas convergentes */
+    .hero-bg::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background:
+        /* Líneas verticales convergentes — fachada izquierda */
+        repeating-linear-gradient(
+          88deg,
+          transparent,
+          transparent 120px,
+          rgba(26,79,216,0.04) 120px,
+          rgba(26,79,216,0.04) 121px
+        ),
+        /* Líneas horizontales — pisos */
+        repeating-linear-gradient(
+          0deg,
+          transparent,
+          transparent 60px,
+          rgba(26,79,216,0.03) 60px,
+          rgba(26,79,216,0.03) 61px
+        );
+    }
+
+    /* Perspectiva principal — estructura de edificio */
+    .hero-building {
+      position: absolute;
+      inset: 0;
+      overflow: hidden;
+    }
+    .hero-building svg {
+      position: absolute;
+      bottom: 0;
+      right: -2%;
+      width: 65%;
+      height: 110%;
+      opacity: 0.18;
+    }
+
+    /* Gradiente de iluminación */
+    .hero-bg::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background:
+        radial-gradient(ellipse 60% 70% at 15% 60%, rgba(26,79,216,0.18) 0%, transparent 70%),
+        radial-gradient(ellipse 40% 50% at 80% 20%, rgba(10,58,173,0.12) 0%, transparent 60%),
+        linear-gradient(180deg, rgba(6,6,10,0) 0%, rgba(6,6,10,0.5) 100%);
+    }
+
+    /* Línea de luz vertical */
+    .hero-lightray {
+      position: absolute;
+      top: 0; left: 30%;
+      width: 1px; height: 100%;
+      background: linear-gradient(180deg, transparent, rgba(59,130,246,0.3) 40%, transparent);
+      pointer-events: none;
+    }
+
+    .hero-content {
+      position: relative;
+      z-index: 2;
+      max-width: 700px;
+    }
+
+    .hero-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 0.72rem;
+      font-weight: 600;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: var(--sky);
+      border: 1px solid rgba(59,130,246,0.3);
+      padding: 6px 16px;
+      border-radius: 2px;
+      margin-bottom: 2rem;
+      background: rgba(26,79,216,0.06);
+      animation: fadeUp 0.8s var(--ease) both;
+    }
+    .hero-badge span {
+      width: 6px; height: 6px;
+      background: var(--sky);
+      border-radius: 50%;
+      animation: pulse 2s infinite;
+    }
+
+    .hero h1 {
+      font-family: var(--font-display);
+      font-size: clamp(3.2rem, 7vw, 6rem);
+      line-height: 0.95;
+      letter-spacing: 0.02em;
+      color: var(--white);
+      margin-bottom: 1.8rem;
+      animation: fadeUp 0.8s var(--ease) 0.1s both;
+    }
+    .hero h1 .accent {
+      color: var(--sky);
+      font-family: var(--font-serif);
+      font-style: italic;
+      font-size: 0.85em;
+    }
+
+    .hero-sub {
+      font-size: 1.1rem;
+      font-weight: 300;
+      color: var(--silver);
+      max-width: 520px;
+      line-height: 1.7;
+      margin-bottom: 3rem;
+      animation: fadeUp 0.8s var(--ease) 0.2s both;
+    }
+
+    .hero-actions {
+      display: flex;
+      gap: 1rem;
+      flex-wrap: wrap;
+      animation: fadeUp 0.8s var(--ease) 0.3s both;
+    }
+
+    .btn-primary {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 0.82rem;
+      font-weight: 600;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: #fff;
+      background: var(--blue);
+      padding: 14px 32px;
+      border: none;
+      border-radius: 3px;
+      text-decoration: none;
+      cursor: pointer;
+      transition: all 0.3s var(--ease);
+      box-shadow: 0 0 0 rgba(26,79,216,0);
+    }
+    .btn-primary:hover {
+      background: #2563EB;
+      transform: translateY(-2px);
+      box-shadow: 0 16px 40px rgba(26,79,216,0.45);
+    }
+    .btn-primary i { font-size: 0.75rem; }
+
+    .btn-ghost {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 0.82rem;
+      font-weight: 600;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--mist);
+      background: transparent;
+      padding: 14px 32px;
+      border: 1px solid rgba(255,255,255,0.12);
+      border-radius: 3px;
+      text-decoration: none;
+      cursor: pointer;
+      transition: all 0.3s var(--ease);
+    }
+    .btn-ghost:hover {
+      border-color: rgba(255,255,255,0.3);
+      color: var(--white);
+      background: rgba(255,255,255,0.04);
+    }
+
+    /* Stats bar */
+    .hero-stats {
+      position: absolute;
+      bottom: 0; left: 0; right: 0;
+      z-index: 2;
+      border-top: 1px solid var(--line);
+      background: rgba(6,6,10,0.6);
+      backdrop-filter: blur(12px);
+    }
+    .hero-stats .container {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+    }
+    .stat-item {
+      padding: 24px 32px;
+      border-right: 1px solid var(--line);
+      animation: fadeUp 0.8s var(--ease) 0.5s both;
+    }
+    .stat-item:last-child { border-right: none; }
+    .stat-num {
+      font-family: var(--font-display);
+      font-size: 2.2rem;
+      letter-spacing: 0.03em;
+      color: var(--white);
+      line-height: 1;
+    }
+    .stat-num span { color: var(--sky); }
+    .stat-label {
+      font-size: 0.75rem;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--silver);
+      margin-top: 4px;
+    }
+
+    /* ════════════════════════════════════════════════════════
+       SECTIONS — base
+    ════════════════════════════════════════════════════════ */
+    section { position: relative; }
+
+    .section-eyebrow {
+      font-size: 0.72rem;
+      font-weight: 600;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: var(--sky);
+      margin-bottom: 1rem;
+    }
+    .section-title {
+      font-family: var(--font-display);
+      font-size: clamp(2.2rem, 4vw, 3.4rem);
+      letter-spacing: 0.03em;
+      line-height: 1;
+      color: var(--white);
+      margin-bottom: 1.5rem;
+    }
+    .section-lead {
+      font-size: 1.05rem;
+      font-weight: 300;
+      color: var(--silver);
+      line-height: 1.75;
+      max-width: 600px;
+    }
+
+    /* Divider line */
+    .h-line {
+      width: 48px; height: 2px;
+      background: var(--blue);
+      margin-bottom: 2rem;
+    }
+
+    /* ════════════════════════════════════════════════════════
+       QUÉ HACEMOS
+    ════════════════════════════════════════════════════════ */
+    .que-hacemos {
+      padding: 120px 0;
+      background: var(--ink);
+      border-top: 1px solid var(--line);
+      border-bottom: 1px solid var(--line);
+    }
+    .que-hacemos .grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 80px;
+      align-items: center;
+      margin-top: 60px;
+    }
+    .qh-left { }
+    .qh-right {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1px;
+      background: var(--line);
+      border: 1px solid var(--line);
+    }
+    .qh-feature {
+      background: var(--ink);
+      padding: 32px;
+      transition: background 0.3s;
+    }
+    .qh-feature:hover { background: rgba(26,79,216,0.06); }
+    .qh-feature-icon {
+      width: 40px; height: 40px;
+      border-radius: 8px;
+      background: rgba(26,79,216,0.12);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 1rem;
+      color: var(--sky);
+      font-size: 1rem;
+    }
+    .qh-feature h4 {
+      font-size: 0.95rem;
+      font-weight: 600;
+      color: var(--white);
+      margin-bottom: 0.5rem;
+    }
+    .qh-feature p {
+      font-size: 0.85rem;
+      color: var(--silver);
+      line-height: 1.6;
+    }
+
+    /* ════════════════════════════════════════════════════════
+       PLANES
+    ════════════════════════════════════════════════════════ */
+    .planes {
+      padding: 120px 0;
+      background: var(--black);
+    }
+    .planes-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-end;
+      margin-bottom: 60px;
+      flex-wrap: wrap;
+      gap: 2rem;
+    }
+    .planes-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1px;
+      background: var(--line);
+      border: 1px solid var(--line);
+    }
+    .plan-card {
+      background: var(--black);
+      padding: 48px;
+      position: relative;
+      overflow: hidden;
+      transition: background 0.4s var(--ease);
+    }
+    .plan-card:hover { background: var(--ink); }
+    .plan-card.featured {
+      background: var(--navy);
+    }
+    .plan-card.featured:hover {
+      background: rgba(7,18,48,0.95);
+    }
+
+    /* Glow corner on featured */
+    .plan-card.featured::before {
+      content: '';
+      position: absolute;
+      top: 0; right: 0;
+      width: 200px; height: 200px;
+      background: radial-gradient(circle, rgba(26,79,216,0.2) 0%, transparent 70%);
+      pointer-events: none;
+    }
+
+    .plan-tag {
+      display: inline-block;
+      font-size: 0.68rem;
+      font-weight: 700;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      padding: 4px 12px;
+      border-radius: 2px;
+      margin-bottom: 2rem;
+    }
+    .plan-tag.tag-base {
+      color: var(--silver);
+      border: 1px solid rgba(255,255,255,0.1);
+      background: transparent;
+    }
+    .plan-tag.tag-pro {
+      color: var(--sky);
+      border: 1px solid rgba(59,130,246,0.4);
+      background: rgba(26,79,216,0.1);
+    }
+
+    .plan-name {
+      font-family: var(--font-display);
+      font-size: 1.8rem;
+      letter-spacing: 0.04em;
+      color: var(--white);
+      margin-bottom: 0.4rem;
+    }
+    .plan-cadence {
+      font-size: 0.8rem;
+      color: var(--silver);
+      margin-bottom: 2.5rem;
+      letter-spacing: 0.06em;
+    }
+
+    .plan-price-block { margin-bottom: 2.5rem; }
+    .plan-price {
+      font-family: var(--font-display);
+      font-size: 3rem;
+      letter-spacing: 0.02em;
+      color: var(--white);
+      line-height: 1;
+    }
+    .plan-price sub {
+      font-family: var(--font-body);
+      font-size: 0.9rem;
+      font-weight: 400;
+      color: var(--silver);
+      vertical-align: baseline;
+    }
+    .plan-price-alt {
+      font-size: 0.85rem;
+      color: var(--silver);
+      margin-top: 0.5rem;
+    }
+    .plan-price-alt strong { color: var(--sky); }
+
+    .plan-divider {
+      height: 1px;
+      background: var(--line);
+      margin-bottom: 2rem;
+    }
+
+    .plan-features { list-style: none; margin-bottom: 2.5rem; }
+    .plan-features li {
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+      font-size: 0.9rem;
+      color: var(--mist);
+      padding: 10px 0;
+      border-bottom: 1px solid rgba(255,255,255,0.04);
+    }
+    .plan-features li:last-child { border-bottom: none; }
+    .plan-features i {
+      color: var(--sky);
+      font-size: 0.75rem;
+      margin-top: 4px;
+      flex-shrink: 0;
+    }
+
+    .plan-note {
+      text-align: center;
+      margin-top: 32px;
+      font-size: 0.78rem;
+      color: var(--silver);
+      letter-spacing: 0.04em;
+    }
+
+    /* ════════════════════════════════════════════════════════
+       METODOLOGÍA
+    ════════════════════════════════════════════════════════ */
+    .metodologia {
+      padding: 120px 0;
+      background: var(--ink);
+      border-top: 1px solid var(--line);
+      border-bottom: 1px solid var(--line);
+    }
+    .metodologia .header { margin-bottom: 80px; }
+
+    .steps {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 0;
+      position: relative;
+    }
+    /* Connector line */
+    .steps::before {
+      content: '';
+      position: absolute;
+      top: 40px; left: calc(100%/6);
+      width: calc(100% - 100%/3);
+      height: 1px;
+      background: linear-gradient(90deg, var(--cobalt), var(--sky), var(--cobalt));
+      opacity: 0.4;
+      z-index: 0;
+    }
+
+    .step {
+      padding: 0 40px 0 0;
+      position: relative;
+      z-index: 1;
+    }
+    .step:last-child { padding-right: 0; }
+
+    .step-num {
+      font-family: var(--font-display);
+      font-size: 5rem;
+      line-height: 1;
+      letter-spacing: -0.02em;
+      color: rgba(26,79,216,0.15);
+      margin-bottom: -1.5rem;
+      display: block;
+    }
+    .step-circle {
+      width: 80px; height: 80px;
+      border-radius: 50%;
+      background: var(--ink);
+      border: 1px solid var(--line);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 2rem;
+      font-size: 1.5rem;
+      color: var(--sky);
+      position: relative;
+      transition: all 0.4s var(--ease);
+    }
+    .step:hover .step-circle {
+      background: rgba(26,79,216,0.15);
+      border-color: rgba(59,130,246,0.4);
+      box-shadow: 0 0 32px rgba(26,79,216,0.25);
+    }
+
+    .step h3 {
+      font-family: var(--font-display);
+      font-size: 1.5rem;
+      letter-spacing: 0.04em;
+      color: var(--white);
+      margin-bottom: 0.75rem;
+    }
+    .step p {
+      font-size: 0.9rem;
+      color: var(--silver);
+      line-height: 1.7;
+    }
+
+    /* ════════════════════════════════════════════════════════
+       NOSOTROS
+    ════════════════════════════════════════════════════════ */
+    .nosotros {
+      padding: 120px 0;
+      background: var(--black);
+    }
+    .nosotros-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 80px;
+      align-items: center;
+    }
+
+    /* Visual — abstract building shape */
+    .nosotros-visual {
+      position: relative;
+      height: 420px;
+    }
+    .vis-card {
+      position: absolute;
+      background: var(--navy);
+      border: 1px solid var(--line);
+      border-radius: 4px;
+    }
+    .vis-card-main {
+      width: 75%; height: 85%;
+      top: 0; right: 0;
+      background: linear-gradient(160deg, var(--navy) 0%, rgba(7,18,48,0.5) 100%);
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-end;
+      padding: 32px;
+      overflow: hidden;
+    }
+    .vis-card-main::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 3px;
+      background: linear-gradient(90deg, var(--blue), var(--sky));
+    }
+    /* Window grid */
+    .vis-windows {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 8px;
+      position: absolute;
+      top: 32px; left: 32px; right: 32px;
+    }
+    .vis-win {
+      height: 20px;
+      background: rgba(59,130,246,0.08);
+      border: 1px solid rgba(59,130,246,0.12);
+      border-radius: 1px;
+    }
+    .vis-win.lit { background: rgba(59,130,246,0.25); border-color: rgba(59,130,246,0.35); }
+
+    .vis-stat {
+      font-family: var(--font-display);
+      font-size: 2.5rem;
+      color: var(--white);
+      letter-spacing: 0.04em;
+    }
+    .vis-stat-label {
+      font-size: 0.75rem;
+      color: var(--silver);
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    .vis-card-secondary {
+      width: 55%; height: 50%;
+      bottom: 0; left: 0;
+      padding: 24px;
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-end;
+    }
+    .vis-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 0.72rem;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--sky);
+      margin-bottom: 0.75rem;
+    }
+    .vis-badge::before {
+      content: '';
+      width: 6px; height: 6px;
+      background: var(--sky);
+      border-radius: 50%;
+    }
+    .vis-text {
+      font-size: 0.85rem;
+      color: var(--mist);
+      line-height: 1.5;
+    }
+
+    /* Story text */
+    .nosotros-text blockquote {
+      font-family: var(--font-serif);
+      font-style: italic;
+      font-size: 1.5rem;
+      line-height: 1.4;
+      color: var(--white);
+      border-left: 2px solid var(--blue);
+      padding-left: 24px;
+      margin-bottom: 2rem;
+    }
+    .nosotros-text p {
+      font-size: 1rem;
+      color: var(--silver);
+      line-height: 1.8;
+      margin-bottom: 1.25rem;
+      font-weight: 300;
+    }
+    .nosotros-text strong { color: var(--mist); font-weight: 500; }
+
+    /* ════════════════════════════════════════════════════════
+       CONTACTO
+    ════════════════════════════════════════════════════════ */
+    .contacto {
+      padding: 120px 0;
+      background: var(--ink);
+      border-top: 1px solid var(--line);
+    }
+    .contacto-grid {
+      display: grid;
+      grid-template-columns: 1fr 1.1fr;
+      gap: 80px;
+      align-items: start;
+      margin-top: 60px;
+    }
+
+    .contact-info-block { }
+    .contact-info-block h3 {
+      font-family: var(--font-display);
+      font-size: 1.6rem;
+      letter-spacing: 0.04em;
+      color: var(--white);
+      margin-bottom: 2rem;
+    }
+    .contact-list { list-style: none; }
+    .contact-list li {
+      display: flex;
+      align-items: flex-start;
+      gap: 16px;
+      padding: 16px 0;
+      border-bottom: 1px solid var(--line);
+      font-size: 0.9rem;
+      color: var(--silver);
+    }
+    .contact-list li:last-child { border-bottom: none; }
+    .contact-list i {
+      width: 36px; height: 36px;
+      border-radius: 8px;
+      background: rgba(26,79,216,0.1);
+      border: 1px solid rgba(26,79,216,0.2);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--sky);
+      font-size: 0.85rem;
+      flex-shrink: 0;
+      margin-top: -2px;
+    }
+    .contact-list span strong {
+      display: block;
+      color: var(--mist);
+      font-size: 0.78rem;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      margin-bottom: 2px;
+    }
+
+    .contact-promise {
+      margin-top: 2.5rem;
+      padding: 24px;
+      border: 1px solid rgba(26,79,216,0.2);
+      border-radius: 4px;
+      background: rgba(26,79,216,0.05);
+    }
+    .contact-promise p {
+      font-size: 0.88rem;
+      color: var(--silver);
+      line-height: 1.7;
+    }
+    .contact-promise p strong { color: var(--sky); }
+
+    /* Form */
+    .form-card {
+      background: var(--black);
+      border: 1px solid var(--line);
+      padding: 48px;
+    }
+    .form-card h3 {
+      font-family: var(--font-display);
+      font-size: 1.6rem;
+      letter-spacing: 0.04em;
+      color: var(--white);
+      margin-bottom: 2rem;
+    }
+
+    .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+    .form-group { margin-bottom: 16px; }
+    .form-group label {
+      display: block;
+      font-size: 0.72rem;
+      font-weight: 600;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--silver);
+      margin-bottom: 8px;
+    }
+    .form-group input,
+    .form-group select,
+    .form-group textarea {
+      width: 100%;
+      background: var(--ink);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 3px;
+      padding: 13px 16px;
+      font-family: var(--font-body);
+      font-size: 0.9rem;
+      color: var(--white);
+      transition: border-color 0.2s, box-shadow 0.2s;
+      appearance: none;
+    }
+    .form-group input::placeholder,
+    .form-group textarea::placeholder { color: rgba(139,154,181,0.4); }
+    .form-group input:focus,
+    .form-group select:focus,
+    .form-group textarea:focus {
+      outline: none;
+      border-color: rgba(59,130,246,0.5);
+      box-shadow: 0 0 0 3px rgba(26,79,216,0.08);
+    }
+    .form-group select option { background: var(--ink); color: var(--white); }
+    .form-group textarea { resize: vertical; min-height: 120px; }
+
+    .form-submit { margin-top: 8px; width: 100%; justify-content: center; font-size: 0.85rem; padding: 16px; }
+
+    /* Form success */
+    .form-success {
+      display: none;
+      text-align: center;
+      padding: 3rem 2rem;
+    }
+    .form-success i {
+      font-size: 2.5rem;
+      color: var(--sky);
+      display: block;
+      margin-bottom: 1rem;
+    }
+    .form-success h3 {
+      font-family: var(--font-display);
+      font-size: 1.8rem;
+      color: var(--white);
+      letter-spacing: 0.04em;
+      margin-bottom: 0.5rem;
+    }
+    .form-success p { font-size: 0.9rem; color: var(--silver); }
+
+    /* ════════════════════════════════════════════════════════
+       FOOTER
+    ════════════════════════════════════════════════════════ */
+    footer {
+      background: var(--black);
+      border-top: 1px solid var(--line);
+      padding: 48px 0;
+    }
+    .footer-inner {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 1.5rem;
+    }
+    .footer-logo {
+      font-family: var(--font-display);
+      font-size: 1.5rem;
+      letter-spacing: 0.08em;
+      color: var(--white);
+    }
+    .footer-logo em { color: var(--sky); font-style: normal; }
+    .footer-copy {
+      font-size: 0.78rem;
+      color: var(--silver);
+      letter-spacing: 0.04em;
+    }
+    .footer-links { display: flex; gap: 2rem; list-style: none; }
+    .footer-links a {
+      font-size: 0.78rem;
+      color: var(--silver);
+      text-decoration: none;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      transition: color 0.2s;
+    }
+    .footer-links a:hover { color: var(--sky); }
+
+    /* ════════════════════════════════════════════════════════
+       WHATSAPP FLOAT
+    ════════════════════════════════════════════════════════ */
+    .wa-float {
+      position: fixed;
+      bottom: 32px; right: 32px;
+      width: 54px; height: 54px;
+      background: #25D366;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.5rem;
+      color: white;
+      text-decoration: none;
+      z-index: 300;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+      transition: transform 0.3s var(--ease), box-shadow 0.3s;
+    }
+    .wa-float:hover {
+      transform: scale(1.1) translateY(-2px);
+      box-shadow: 0 16px 40px rgba(37,211,102,0.35);
+    }
+
+    /* ════════════════════════════════════════════════════════
+       MOBILE NAV
+    ════════════════════════════════════════════════════════ */
+    @media (max-width: 900px) {
+      .nav-links, .nav-cta { display: none; }
+      .menu-btn { display: block; }
+      .nav-links.open {
+        display: flex;
+        flex-direction: column;
+        position: absolute;
+        top: 72px; left: 0; right: 0;
+        background: rgba(6,6,10,0.97);
+        backdrop-filter: blur(20px);
+        padding: 24px 32px;
+        gap: 1.5rem;
+        border-bottom: 1px solid var(--line);
+      }
+    }
+
+    /* ════════════════════════════════════════════════════════
+       RESPONSIVE
+    ════════════════════════════════════════════════════════ */
+    @media (max-width: 1024px) {
+      .que-hacemos .grid, .nosotros-grid { grid-template-columns: 1fr; gap: 48px; }
+      .qh-right { grid-template-columns: 1fr 1fr; }
+      .nosotros-visual { height: 320px; }
+      .contacto-grid { grid-template-columns: 1fr; gap: 48px; }
+    }
+    @media (max-width: 768px) {
+      .planes-grid { grid-template-columns: 1fr; }
+      .plan-card { padding: 36px 28px; }
+      .steps { grid-template-columns: 1fr; gap: 48px; }
+      .steps::before { display: none; }
+      .hero-stats .container { grid-template-columns: 1fr; }
+      .stat-item { border-right: none; border-bottom: 1px solid var(--line); }
+      .form-row { grid-template-columns: 1fr; }
+      .form-card { padding: 28px; }
+      .qh-right { grid-template-columns: 1fr; }
+      .footer-inner { flex-direction: column; text-align: center; }
+      .footer-links { flex-wrap: wrap; justify-content: center; }
+    }
+
+    /* ════════════════════════════════════════════════════════
+       ANIMATIONS
+    ════════════════════════════════════════════════════════ */
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(28px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50%       { opacity: 0.4; }
+    }
+    @keyframes shimmer {
+      from { background-position: -200% center; }
+      to   { background-position: 200% center; }
+    }
+
+    /* Scroll-reveal */
+    .reveal {
+      opacity: 0;
+      transform: translateY(32px);
+      transition: opacity 0.8s var(--ease), transform 0.8s var(--ease);
+    }
+    .reveal.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+    .reveal-delay-1 { transition-delay: 0.1s; }
+    .reveal-delay-2 { transition-delay: 0.2s; }
+    .reveal-delay-3 { transition-delay: 0.3s; }
+    .reveal-delay-4 { transition-delay: 0.4s; }
+  </style>
+</head>
+<body>
+
+<!-- ═══ HEADER ═══════════════════════════════════════════ -->
+<header id="header">
+  <div class="container">
+    <nav class="navbar">
+      <a href="#inicio" class="logo">OPTIMIZA<em>.</em></a>
+      <ul class="nav-links" id="navLinks">
+        <li><a href="#inicio">Inicio</a></li>
+        <li><a href="#que-hacemos">Qué hacemos</a></li>
+        <li><a href="#planes">Planes</a></li>
+        <li><a href="#metodologia">Metodología</a></li>
+        <li><a href="#nosotros">Nosotros</a></li>
+        <li><a href="#contacto">Contacto</a></li>
+      </ul>
+      <a href="#contacto" class="nav-cta">Diagnóstico gratuito</a>
+      <button class="menu-btn" id="menuBtn" aria-label="Menú">
+        <i class="fas fa-bars"></i>
+      </button>
+    </nav>
+  </div>
+</header>
+
+<!-- ═══ HERO ══════════════════════════════════════════════ -->
+<section id="inicio" class="hero">
+  <div class="hero-bg"></div>
+
+  <!-- Edificio SVG — perspectiva inferior -->
+  <div class="hero-building" aria-hidden="true">
+    <svg viewBox="0 0 600 900" fill="none" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMaxYMax meet">
+      <!-- Torre principal -->
+      <rect x="160" y="50" width="280" height="850" fill="url(#bldGrad)" stroke="rgba(59,130,246,0.3)" stroke-width="0.5"/>
+      <!-- Fachada izquierda en perspectiva -->
+      <polygon points="160,50 60,150 60,900 160,900" fill="url(#sideGrad)"/>
+      <!-- Fachada derecha en perspectiva -->
+      <polygon points="440,50 540,150 540,900 440,900" fill="url(#sideGrad2)"/>
+
+      <!-- Ventanas fachada principal -->
+      <g opacity="0.6">
+        <!-- Col 1 -->
+        <rect x="185" y="80"  width="35" height="22" fill="rgba(59,130,246,0.18)" stroke="rgba(59,130,246,0.25)" stroke-width="0.5"/>
+        <rect x="185" y="120" width="35" height="22" fill="rgba(59,130,246,0.25)" stroke="rgba(59,130,246,0.3)"  stroke-width="0.5"/>
+        <rect x="185" y="160" width="35" height="22" fill="rgba(59,130,246,0.1)"  stroke="rgba(59,130,246,0.2)"  stroke-width="0.5"/>
+        <rect x="185" y="200" width="35" height="22" fill="rgba(59,130,246,0.22)" stroke="rgba(59,130,246,0.28)" stroke-width="0.5"/>
+        <rect x="185" y="240" width="35" height="22" fill="rgba(59,130,246,0.08)" stroke="rgba(59,130,246,0.15)" stroke-width="0.5"/>
+        <rect x="185" y="280" width="35" height="22" fill="rgba(59,130,246,0.2)"  stroke="rgba(59,130,246,0.26)" stroke-width="0.5"/>
+        <rect x="185" y="320" width="35" height="22" fill="rgba(59,130,246,0.15)" stroke="rgba(59,130,246,0.22)" stroke-width="0.5"/>
+        <rect x="185" y="360" width="35" height="22" fill="rgba(59,130,246,0.28)" stroke="rgba(59,130,246,0.35)" stroke-width="0.5"/>
+        <!-- Col 2 -->
+        <rect x="235" y="80"  width="35" height="22" fill="rgba(59,130,246,0.3)"  stroke="rgba(59,130,246,0.35)" stroke-width="0.5"/>
+        <rect x="235" y="120" width="35" height="22" fill="rgba(59,130,246,0.12)" stroke="rgba(59,130,246,0.2)"  stroke-width="0.5"/>
+        <rect x="235" y="160" width="35" height="22" fill="rgba(59,130,246,0.28)" stroke="rgba(59,130,246,0.35)" stroke-width="0.5"/>
+        <rect x="235" y="200" width="35" height="22" fill="rgba(59,130,246,0.08)" stroke="rgba(59,130,246,0.15)" stroke-width="0.5"/>
+        <rect x="235" y="240" width="35" height="22" fill="rgba(59,130,246,0.25)" stroke="rgba(59,130,246,0.3)"  stroke-width="0.5"/>
+        <rect x="235" y="280" width="35" height="22" fill="rgba(59,130,246,0.18)" stroke="rgba(59,130,246,0.25)" stroke-width="0.5"/>
+        <rect x="235" y="320" width="35" height="22" fill="rgba(59,130,246,0.22)" stroke="rgba(59,130,246,0.28)" stroke-width="0.5"/>
+        <rect x="235" y="360" width="35" height="22" fill="rgba(59,130,246,0.1)"  stroke="rgba(59,130,246,0.18)" stroke-width="0.5"/>
+        <!-- Col 3 -->
+        <rect x="285" y="80"  width="35" height="22" fill="rgba(59,130,246,0.15)" stroke="rgba(59,130,246,0.22)" stroke-width="0.5"/>
+        <rect x="285" y="120" width="35" height="22" fill="rgba(59,130,246,0.28)" stroke="rgba(59,130,246,0.35)" stroke-width="0.5"/>
+        <rect x="285" y="160" width="35" height="22" fill="rgba(59,130,246,0.2)"  stroke="rgba(59,130,246,0.26)" stroke-width="0.5"/>
+        <rect x="285" y="200" width="35" height="22" fill="rgba(59,130,246,0.3)"  stroke="rgba(59,130,246,0.38)" stroke-width="0.5"/>
+        <rect x="285" y="240" width="35" height="22" fill="rgba(59,130,246,0.12)" stroke="rgba(59,130,246,0.2)"  stroke-width="0.5"/>
+        <rect x="285" y="280" width="35" height="22" fill="rgba(59,130,246,0.25)" stroke="rgba(59,130,246,0.3)"  stroke-width="0.5"/>
+        <rect x="285" y="320" width="35" height="22" fill="rgba(59,130,246,0.08)" stroke="rgba(59,130,246,0.15)" stroke-width="0.5"/>
+        <rect x="285" y="360" width="35" height="22" fill="rgba(59,130,246,0.22)" stroke="rgba(59,130,246,0.28)" stroke-width="0.5"/>
+        <!-- Col 4 -->
+        <rect x="335" y="80"  width="35" height="22" fill="rgba(59,130,246,0.22)" stroke="rgba(59,130,246,0.28)" stroke-width="0.5"/>
+        <rect x="335" y="120" width="35" height="22" fill="rgba(59,130,246,0.1)"  stroke="rgba(59,130,246,0.18)" stroke-width="0.5"/>
+        <rect x="335" y="160" width="35" height="22" fill="rgba(59,130,246,0.3)"  stroke="rgba(59,130,246,0.38)" stroke-width="0.5"/>
+        <rect x="335" y="200" width="35" height="22" fill="rgba(59,130,246,0.18)" stroke="rgba(59,130,246,0.25)" stroke-width="0.5"/>
+        <rect x="335" y="240" width="35" height="22" fill="rgba(59,130,246,0.28)" stroke="rgba(59,130,246,0.35)" stroke-width="0.5"/>
+        <rect x="335" y="280" width="35" height="22" fill="rgba(59,130,246,0.15)" stroke="rgba(59,130,246,0.22)" stroke-width="0.5"/>
+        <rect x="335" y="320" width="35" height="22" fill="rgba(59,130,246,0.2)"  stroke="rgba(59,130,246,0.26)" stroke-width="0.5"/>
+        <rect x="335" y="360" width="35" height="22" fill="rgba(59,130,246,0.08)" stroke="rgba(59,130,246,0.15)" stroke-width="0.5"/>
+        <!-- Col 5 -->
+        <rect x="385" y="80"  width="35" height="22" fill="rgba(59,130,246,0.08)" stroke="rgba(59,130,246,0.15)" stroke-width="0.5"/>
+        <rect x="385" y="120" width="35" height="22" fill="rgba(59,130,246,0.25)" stroke="rgba(59,130,246,0.3)"  stroke-width="0.5"/>
+        <rect x="385" y="160" width="35" height="22" fill="rgba(59,130,246,0.18)" stroke="rgba(59,130,246,0.25)" stroke-width="0.5"/>
+        <rect x="385" y="200" width="35" height="22" fill="rgba(59,130,246,0.12)" stroke="rgba(59,130,246,0.2)"  stroke-width="0.5"/>
+        <rect x="385" y="240" width="35" height="22" fill="rgba(59,130,246,0.3)"  stroke="rgba(59,130,246,0.38)" stroke-width="0.5"/>
+        <rect x="385" y="280" width="35" height="22" fill="rgba(59,130,246,0.2)"  stroke="rgba(59,130,246,0.26)" stroke-width="0.5"/>
+        <rect x="385" y="320" width="35" height="22" fill="rgba(59,130,246,0.22)" stroke="rgba(59,130,246,0.28)" stroke-width="0.5"/>
+        <rect x="385" y="360" width="35" height="22" fill="rgba(59,130,246,0.15)" stroke="rgba(59,130,246,0.22)" stroke-width="0.5"/>
+      </g>
+
+      <!-- Ventanas fachada lateral izquierda perspectiva -->
+      <g opacity="0.35">
+        <rect x="70"  y="160" width="22" height="16" fill="rgba(59,130,246,0.3)" stroke="rgba(59,130,246,0.4)" stroke-width="0.5"/>
+        <rect x="100" y="160" width="22" height="16" fill="rgba(59,130,246,0.2)" stroke="rgba(59,130,246,0.3)" stroke-width="0.5"/>
+        <rect x="70"  y="188" width="22" height="16" fill="rgba(59,130,246,0.15)"stroke="rgba(59,130,246,0.25)"stroke-width="0.5"/>
+        <rect x="100" y="188" width="22" height="16" fill="rgba(59,130,246,0.28)"stroke="rgba(59,130,246,0.38)"stroke-width="0.5"/>
+        <rect x="70"  y="216" width="22" height="16" fill="rgba(59,130,246,0.22)"stroke="rgba(59,130,246,0.32)"stroke-width="0.5"/>
+        <rect x="100" y="216" width="22" height="16" fill="rgba(59,130,246,0.1)" stroke="rgba(59,130,246,0.2)" stroke-width="0.5"/>
+      </g>
+
+      <!-- Líneas horizontales (pisos) -->
+      <g stroke="rgba(59,130,246,0.08)" stroke-width="0.5">
+        <line x1="160" y1="110" x2="440" y2="110"/>
+        <line x1="160" y1="150" x2="440" y2="150"/>
+        <line x1="160" y1="190" x2="440" y2="190"/>
+        <line x1="160" y1="230" x2="440" y2="230"/>
+        <line x1="160" y1="270" x2="440" y2="270"/>
+        <line x1="160" y1="310" x2="440" y2="310"/>
+        <line x1="160" y1="350" x2="440" y2="350"/>
+        <line x1="160" y1="390" x2="440" y2="390"/>
+      </g>
+
+      <!-- Reflejo de luz en la cima -->
+      <rect x="160" y="50" width="280" height="3" fill="rgba(59,130,246,0.5)"/>
+
+      <defs>
+        <linearGradient id="bldGrad" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%"   stop-color="rgba(10,58,173,0.35)"/>
+          <stop offset="40%"  stop-color="rgba(7,18,48,0.25)"/>
+          <stop offset="100%" stop-color="rgba(6,6,10,0.1)"/>
+        </linearGradient>
+        <linearGradient id="sideGrad" x1="0" y1="0" x2="1" y2="0">
+          <stop offset="0%"  stop-color="rgba(6,6,10,0.15)"/>
+          <stop offset="100%" stop-color="rgba(10,58,173,0.12)"/>
+        </linearGradient>
+        <linearGradient id="sideGrad2" x1="0" y1="0" x2="1" y2="0">
+          <stop offset="0%"  stop-color="rgba(10,58,173,0.12)"/>
+          <stop offset="100%" stop-color="rgba(6,6,10,0.05)"/>
+        </linearGradient>
+      </defs>
+    </svg>
+  </div>
+
+  <div class="hero-lightray"></div>
+
+  <div class="container">
+    <div class="hero-content">
+      <div class="hero-badge">
+        <span></span>
+        Consultoría en Optimización Operativa
+      </div>
+      <h1>
+        OPTIMIZAMOS<br>
+        LA <span class="accent">rentabilidad</span><br>
+        DE TU PYME
+      </h1>
+      <p class="hero-sub">
+        Eliminamos fugas de capital con dashboards en tiempo real y procesos estandarizados, para que tomes decisiones basadas en datos, no en corazonadas.
+      </p>
+      <div class="hero-actions">
+        <a href="#contacto" class="btn-primary">
+          Diagnóstico gratuito <i class="fas fa-arrow-right"></i>
+        </a>
+        <a href="#planes" class="btn-ghost">
+          Ver planes
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <div class="hero-stats">
+    <div class="container">
+      <div class="stat-item">
+        <div class="stat-num">4<span>sem</span></div>
+        <div class="stat-label">Primeros resultados medibles</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-num">+40<span>M</span></div>
+        <div class="stat-label">COP en fugas identificadas</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-num">&lt;24<span>h</span></div>
+        <div class="stat-label">Tiempo de respuesta en soporte</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ QUÉ HACEMOS ═══════════════════════════════════════ -->
+<section id="que-hacemos" class="que-hacemos">
+  <div class="container">
+    <div class="grid">
+      <div class="qh-left reveal">
+        <p class="section-eyebrow">Qué hacemos</p>
+        <div class="h-line"></div>
+        <h2 class="section-title">DATOS QUE<br>SE CONVIERTEN<br>EN ACCIÓN</h2>
+        <p class="section-lead">
+          En <strong style="color:var(--mist)">OPTIMIZA</strong> transformamos datos complejos en herramientas ejecutables. Diseñamos <strong style="color:var(--mist)">dashboards de control en tiempo real</strong> y <strong style="color:var(--mist)">manuales de procesos de alta precisión</strong> para que elimines ineficiencias operativas y tomes decisiones basadas en hechos, no en intuiciones.
+        </p>
+      </div>
+      <div class="qh-right reveal reveal-delay-2">
+        <div class="qh-feature">
+          <div class="qh-feature-icon"><i class="fas fa-chart-line"></i></div>
+          <h4>Dashboards en Tiempo Real</h4>
+          <p>Visualización inmediata de tus KPIs más críticos. Sin demoras, sin hojas de cálculo manuales.</p>
+        </div>
+        <div class="qh-feature">
+          <div class="qh-feature-icon"><i class="fas fa-file-alt"></i></div>
+          <h4>Manuales de Procesos</h4>
+          <p>Documentación de alta precisión que tu equipo puede ejecutar sin depender de ti.</p>
+        </div>
+        <div class="qh-feature">
+          <div class="qh-feature-icon"><i class="fas fa-search-dollar"></i></div>
+          <h4>Auditoría Operativa</h4>
+          <p>Detectamos exactamente dónde se pierden recursos: tiempo, dinero y talento.</p>
+        </div>
+        <div class="qh-feature">
+          <div class="qh-feature-icon"><i class="fas fa-graduation-cap"></i></div>
+          <h4>Capacitación al Equipo</h4>
+          <p>Entrenamos a tu equipo para que adopte y mantenga los nuevos procesos sin fricción.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ PLANES ════════════════════════════════════════════ -->
+<section id="planes" class="planes">
+  <div class="container">
+    <div class="planes-header">
+      <div class="reveal">
+        <p class="section-eyebrow">Planes</p>
+        <div class="h-line"></div>
+        <h2 class="section-title">SOLUCIONES<br>A TU MEDIDA</h2>
+      </div>
+      <p class="section-lead reveal reveal-delay-1" style="max-width:360px; font-size:0.95rem;">
+        Dos modalidades diseñadas según el nivel de acompañamiento que necesita tu PyME.
+      </p>
+    </div>
+
+    <div class="planes-grid reveal reveal-delay-2">
+      <!-- PLAN PUNTUAL -->
+      <div class="plan-card">
+        <span class="plan-tag tag-base">Pago Único</span>
+        <h3 class="plan-name">INTERVENCIÓN<br>PUNTUAL</h3>
+        <p class="plan-cadence">Resultados en 4 semanas</p>
+        <div class="plan-price-block">
+          <div class="plan-price">$5.900.000<sub> COP + IVA</sub></div>
+        </div>
+        <div class="plan-divider"></div>
+        <ul class="plan-features">
+          <li><i class="fas fa-check"></i> Auditoría operativa integral de tu empresa</li>
+          <li><i class="fas fa-check"></i> Dashboards iniciales con 3 KPIs clave</li>
+          <li><i class="fas fa-check"></i> Manual de procesos editable y entregable</li>
+          <li><i class="fas fa-check"></i> Capacitación al equipo para adopción inmediata</li>
+        </ul>
+        <a href="#contacto" class="btn-primary" style="width:100%; justify-content:center;">
+          Solicitar información <i class="fas fa-arrow-right"></i>
+        </a>
+      </div>
+
+      <!-- PLAN CONTINUO -->
+      <div class="plan-card featured">
+        <span class="plan-tag tag-pro">Más Popular</span>
+        <h3 class="plan-name">ACOMPAÑAMIENTO<br>CONTINUO</h3>
+        <p class="plan-cadence">Suscripción mensual o anual</p>
+        <div class="plan-price-block">
+          <div class="plan-price">$1.490.000<sub> COP/mes + IVA</sub></div>
+          <p class="plan-price-alt">
+            o <strong>$15.000.000 COP/año + IVA</strong> — ahorras 2 meses completos
+          </p>
+        </div>
+        <div class="plan-divider"></div>
+        <ul class="plan-features">
+          <li><i class="fas fa-check"></i> Todo lo incluido en el Plan Puntual</li>
+          <li><i class="fas fa-check"></i> Monitoreo mensual de indicadores clave</li>
+          <li><i class="fas fa-check"></i> Actualización periódica de dashboards</li>
+          <li><i class="fas fa-check"></i> Soporte prioritario con respuesta en menos de 24 h</li>
+          <li><i class="fas fa-check"></i> Reporte ejecutivo mensual con análisis y recomendaciones</li>
+        </ul>
+        <a href="#contacto" class="btn-primary" style="width:100%; justify-content:center;">
+          Suscribirme ahora <i class="fas fa-arrow-right"></i>
+        </a>
+      </div>
+    </div>
+
+    <p class="plan-note reveal">
+      * Precios expresados sin IVA. Para necesidades personalizadas o empresas con múltiples sedes, contáctanos directamente.
+    </p>
+  </div>
+</section>
+
+<!-- ═══ METODOLOGÍA ═══════════════════════════════════════ -->
+<section id="metodologia" class="metodologia">
+  <div class="container">
+    <div class="header reveal">
+      <p class="section-eyebrow">Metodología</p>
+      <div class="h-line"></div>
+      <h2 class="section-title">CÓMO<br>TRABAJAMOS</h2>
+    </div>
+
+    <div class="steps">
+      <div class="step reveal">
+        <span class="step-num">01</span>
+        <div class="step-circle"><i class="fas fa-search"></i></div>
+        <h3>DIAGNÓSTICO</h3>
+        <p>Analizamos en profundidad tus procesos operativos, identificamos las fugas de capital y mapeamos cada punto de ineficiencia. Sin datos, no hay decisión.</p>
+      </div>
+      <div class="step reveal reveal-delay-2">
+        <span class="step-num">02</span>
+        <div class="step-circle"><i class="fas fa-cogs"></i></div>
+        <h3>IMPLEMENTACIÓN</h3>
+        <p>Diseñamos dashboards a medida y manuales de procesos ejecutables. Todo calibrado a la realidad de tu negocio, no a plantillas genéricas.</p>
+      </div>
+      <div class="step reveal reveal-delay-3">
+        <span class="step-num">03</span>
+        <div class="step-circle"><i class="fas fa-chart-line"></i></div>
+        <h3>ACOMPAÑAMIENTO</h3>
+        <p>Monitoreamos tus KPIs mes a mes, optimizamos continuamente y entregamos reportes ejecutivos para que siempre tengas el control.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ NOSOTROS ══════════════════════════════════════════ -->
+<section id="nosotros" class="nosotros">
+  <div class="container">
+    <div class="nosotros-grid">
+      <!-- Visual -->
+      <div class="nosotros-visual reveal">
+        <div class="vis-card vis-card-main">
+          <div class="vis-windows">
+            <div class="vis-win lit"></div><div class="vis-win"></div><div class="vis-win lit"></div><div class="vis-win"></div><div class="vis-win lit"></div>
+            <div class="vis-win"></div><div class="vis-win lit"></div><div class="vis-win"></div><div class="vis-win lit"></div><div class="vis-win"></div>
+            <div class="vis-win lit"></div><div class="vis-win lit"></div><div class="vis-win"></div><div class="vis-win lit"></div><div class="vis-win"></div>
+            <div class="vis-win"></div><div class="vis-win"></div><div class="vis-win lit"></div><div class="vis-win"></div><div class="vis-win lit"></div>
+          </div>
+          <div class="vis-stat">$40M</div>
+          <div class="vis-stat-label">COP en fugas identificadas — primer caso</div>
+        </div>
+        <div class="vis-card vis-card-secondary">
+          <div class="vis-badge">Montería · Remoto Global</div>
+          <p class="vis-text">Atendemos PyMEs en Colombia y Latinoamérica con metodologías replicables en cualquier sector.</p>
+        </div>
+      </div>
+
+      <!-- Texto -->
+      <div class="nosotros-text reveal reveal-delay-2">
+        <p class="section-eyebrow">Sobre OPTIMIZA</p>
+        <div class="h-line"></div>
+        <blockquote>
+          "Nació de una frustración real: dirigir una PyME con alto potencial, atrapada en el caos operativo."
+        </blockquote>
+        <p>
+          Las consultorías tradicionales entregaban informes teóricos que nadie ejecutaba. Decidimos aplicar análisis de datos a la operación diaria.
+        </p>
+        <p>
+          En tres meses, identificamos <strong>fugas equivalentes a 40 millones de pesos anuales</strong>. Esa experiencia se convirtió en nuestra metodología.
+        </p>
+        <p>
+          Hoy ayudamos a dueños de PyMEs a recuperar el control de su empresa, su tiempo y su tranquilidad. Sin promesas vacías. Con dashboards que puedes ver en tiempo real y procesos que tu equipo puede ejecutar desde el día uno.
+        </p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ CONTACTO ══════════════════════════════════════════ -->
+<section id="contacto" class="contacto">
+  <div class="container">
+    <div class="reveal">
+      <p class="section-eyebrow">Contacto</p>
+      <div class="h-line"></div>
+      <h2 class="section-title">HABLEMOS DE<br>TU PROYECTO</h2>
+    </div>
+
+    <div class="contacto-grid">
+      <!-- Info -->
+      <div class="contact-info-block reveal">
+        <h3>INFORMACIÓN DE CONTACTO</h3>
+        <ul class="contact-list">
+          <li>
+            <i class="fas fa-envelope"></i>
+            <span><strong>Correo</strong>optimiza.contacto.soporte@gmail.com</span>
+          </li>
+          <li>
+            <i class="fab fa-whatsapp"></i>
+            <span><strong>WhatsApp</strong>+57 305 3475 234</span>
+          </li>
+          <li>
+            <i class="fab fa-linkedin"></i>
+            <span><strong>LinkedIn</strong>/company/optimiza-consultoria</span>
+          </li>
+          <li>
+            <i class="fas fa-map-marker-alt"></i>
+            <span><strong>Ubicación</strong>Montería, Colombia · Atención remota internacional</span>
+          </li>
+          <li>
+            <i class="far fa-clock"></i>
+            <span><strong>Horario</strong>Lunes a viernes, 9:00 am – 6:00 pm (Hora Colombia)</span>
+          </li>
+        </ul>
+        <div class="contact-promise">
+          <p>
+            <strong>Diagnóstico gratuito sin compromiso.</strong> Nuestro equipo de especialistas analizará tu caso, identificará las principales oportunidades de mejora y te presentará un plan de acción concreto en menos de 48 horas.
+          </p>
+        </div>
+      </div>
+
+      <!-- Formulario -->
+      <!--
+      ═══════════════════════════════════════════════════════
+        FORMULARIO — Powered by Formspree
+      ───────────────────────────────────────────────────────
+        PASOS para activarlo (5 minutos):
+        1. Ve a https://formspree.io y crea una cuenta gratuita.
+        2. Crea un nuevo formulario → copia tu endpoint:
+           https://formspree.io/f/XXXXXXXX
+        3. Reemplaza "TU_ENDPOINT_FORMSPREE" en el atributo
+           action= del form de abajo.
+        4. Sube a GitHub Pages. Listo — cada envío llega
+           a tu correo y queda guardado en Formspree.
+      ═══════════════════════════════════════════════════════
+      -->
+      <div class="form-card reveal reveal-delay-2" id="formWrapper">
+        <h3>SOLICITA TU DIAGNÓSTICO</h3>
+        <form id="contactForm"
+              action="https://formspree.io/f/TU_ENDPOINT_FORMSPREE"
+              method="POST">
+          <input type="hidden" name="_subject" value="Nuevo lead — OPTIMIZA">
+
+          <div class="form-row">
+            <div class="form-group">
+              <label for="nombre">Nombre completo</label>
+              <input id="nombre" type="text" name="nombre" placeholder="Ej. Carlos Martínez" required>
+            </div>
+            <div class="form-group">
+              <label for="email">Correo electrónico</label>
+              <input id="email" type="email" name="email" placeholder="correo@empresa.com" required>
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label for="telefono">Teléfono / WhatsApp</label>
+              <input id="telefono" type="tel" name="telefono" placeholder="+57 300 000 0000">
+            </div>
+            <div class="form-group">
+              <label for="plan">Plan de interés</label>
+              <select id="plan" name="plan">
+                <option value="">Selecciona un plan</option>
+                <option value="Plan Intervención Puntual">Plan Intervención Puntual</option>
+                <option value="Acompañamiento Continuo - Mensual">Acompañamiento Continuo – Mensual</option>
+                <option value="Acompañamiento Continuo - Anual">Acompañamiento Continuo – Anual</option>
+                <option value="Asesoría">No estoy seguro, quiero asesoría</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="mensaje">Cuéntanos sobre tu empresa</label>
+            <textarea id="mensaje" name="mensaje" placeholder="¿Cuáles son los principales cuellos de botella operativos de tu empresa? ¿En qué área sientes que pierdes más tiempo o dinero?"></textarea>
+          </div>
+
+          <button type="submit" class="btn-primary form-submit" id="submitBtn">
+            Solicitar diagnóstico gratuito <i class="fas fa-arrow-right"></i>
+          </button>
+        </form>
+
+        <div class="form-success" id="formSuccess">
+          <i class="fas fa-check-circle"></i>
+          <h3>¡MENSAJE ENVIADO!</h3>
+          <p>Nos pondremos en contacto contigo en menos de 24 horas.<br>Revisa también tu carpeta de spam.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ FOOTER ════════════════════════════════════════════ -->
+<footer>
+  <div class="container">
+    <div class="footer-inner">
+      <div class="footer-logo">OPTIMIZA<em>.</em></div>
+      <p class="footer-copy">© 2025 OPTIMIZA — Transformamos datos en decisiones. Todos los derechos reservados.</p>
+      <ul class="footer-links">
+        <li><a href="#">Privacidad</a></li>
+        <li><a href="#">Términos</a></li>
+      </ul>
+    </div>
+  </div>
+</footer>
+
+<!-- WhatsApp flotante -->
+<a href="https://wa.me/573053475234?text=Hola%2C%20quiero%20optimizar%20mi%20empresa" class="wa-float" target="_blank" aria-label="Escríbenos por WhatsApp">
+  <i class="fab fa-whatsapp"></i>
+</a>
+
+<script>
+  // ── Header scroll ──────────────────────────────────────
+  const header = document.getElementById('header');
+  window.addEventListener('scroll', () => {
+    header.classList.toggle('scrolled', window.scrollY > 40);
+  });
+
+  // ── Menú móvil ────────────────────────────────────────
+  const menuBtn  = document.getElementById('menuBtn');
+  const navLinks = document.getElementById('navLinks');
+  menuBtn.addEventListener('click', () => navLinks.classList.toggle('open'));
+  navLinks.querySelectorAll('a').forEach(a => {
+    a.addEventListener('click', () => navLinks.classList.remove('open'));
+  });
+
+  // ── Scroll suave ──────────────────────────────────────
+  document.querySelectorAll('a[href^="#"]').forEach(a => {
+    a.addEventListener('click', e => {
+      e.preventDefault();
+      const target = document.querySelector(a.getAttribute('href'));
+      if (target) target.scrollIntoView({ behavior: 'smooth' });
+    });
+  });
+
+  // ── Scroll reveal ─────────────────────────────────────
+  const io = new IntersectionObserver((entries) => {
+    entries.forEach(el => {
+      if (el.isIntersecting) { el.target.classList.add('visible'); io.unobserve(el.target); }
+    });
+  }, { threshold: 0.12 });
+  document.querySelectorAll('.reveal').forEach(el => io.observe(el));
+
+  // ── Formulario (Formspree, sin redirección) ────────────
+  const form        = document.getElementById('contactForm');
+  const formSuccess = document.getElementById('formSuccess');
+  const submitBtn   = document.getElementById('submitBtn');
+
+  form.addEventListener('submit', async e => {
+    e.preventDefault();
+    submitBtn.textContent = 'Enviando…';
+    submitBtn.disabled = true;
+    try {
+      const res = await fetch(form.action, {
+        method: 'POST',
+        body: new FormData(form),
+        headers: { 'Accept': 'application/json' }
+      });
+      if (res.ok) {
+        form.style.display = 'none';
+        formSuccess.style.display = 'block';
+      } else {
+        submitBtn.textContent = 'Error. Intenta de nuevo.';
+        submitBtn.disabled = false;
+      }
+    } catch {
+      submitBtn.textContent = 'Error de red. Intenta de nuevo.';
+      submitBtn.disabled = false;
+    }
+  });
+</script>
+</body>
+</html>
